@@ -7,13 +7,14 @@ var sinon = require('sinon');
 
 chai.use(require('sinon-chai'));
 
-describe('/lib/worker', function () {
-  var worker;
+describe('/lib/streamer', function () {
+  var streamer;
   var T;
   var twit;
   var stream;
   var nconf;
   var mocks;
+  var poster;
 
   beforeEach(function () {
     stream = {
@@ -34,11 +35,16 @@ describe('/lib/worker', function () {
 
     nconf.env.returns(nconf);
 
+    poster = {
+      send: sinon.spy()
+    };
+
     mocks = require(process.cwd() + '/tests/mocks.json');
 
-    worker = proxyquire(process.cwd() + '/lib/worker', {
+    streamer = proxyquire(process.cwd() + '/lib/streamer', {
       twit: twit,
-      nconf: nconf
+      nconf: nconf,
+      './poster': poster
     });
   });
 
@@ -48,7 +54,7 @@ describe('/lib/worker', function () {
         foo: 'bar'
       });
 
-      worker.listen();
+      streamer.listen();
 
       expect(twit).calledOnce;
       expect(twit).calledWith({
@@ -57,7 +63,7 @@ describe('/lib/worker', function () {
     });
 
     it('should filter twitter statuses by the word devsum15', function () {
-      worker.listen();
+      streamer.listen();
 
       expect(T.stream).calledOnce;
       expect(T.stream).calledWith('statuses/filter', {
@@ -69,8 +75,11 @@ describe('/lib/worker', function () {
       it('should handle a new tweet', function () {
         var tweet = mocks.tweet;
 
-        worker.listen();
+        streamer.listen();
         stream.on.withArgs('tweet').yield(tweet);
+
+        expect(poster.send).calledOnce;
+        expect(poster.send).calledWith(tweet);
       });
     });
   });

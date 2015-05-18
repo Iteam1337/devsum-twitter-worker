@@ -1,5 +1,5 @@
 var express = require('express');
-var worker = require('./lib/worker');
+var streamer = require('./lib/streamer');
 var app = express();
 
-app.listen(process.env.PORT ||  3000, worker.listen);
+app.listen(process.env.PORT ||  3000, streamer.listen);
