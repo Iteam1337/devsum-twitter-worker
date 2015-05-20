@@ -6,6 +6,7 @@ var streamer = require('./lib/streamer');
 var parser = require('./lib/parser');
 var poster = require('./lib/poster');
 var elastic = require('./lib/elastic');
+var filter = require('./lib/filter');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
@@ -13,12 +14,10 @@ var io = require('socket.io')(server);
 function onTweet(tweet) {
   parser
     .parseTweet(tweet)
+    .then(elastic.saveTweet)
     .then(poster.send)
-    .then(elastic.save.bind(null, tweet))
-    .then(function (result) {
-      console.log('result', result);
-    })
-    .then(io.emit)
+    .then(filter)
+    .then(elastic.saveFace)
     .catch(function (error) {
       console.log('something borked!', error);
     })
