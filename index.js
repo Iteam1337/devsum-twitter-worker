@@ -10,27 +10,44 @@ var filter = require('./lib/filter');
 var io = require('socket.io').listen(process.env.PORT ||  3000);
 
 io.on('connection', function (socket) {
-  socket.emit('news', { hello: 'world' });
+  socket.emit('news', {
+    hello: 'world'
+  });
 });
 
-io.on('error', function(){ console.log('io error', arguments); });
+io.on('error', function () {
+  console.log('io error', arguments);
+});
+
+function emit(object) {
+  console.log('\n Emit a face event', JSON.stringify(object));
+  io.emit('face', object);
+}
 
 function onTweet(tweet) {
-  parser
-    .parseTweet(tweet)
-    .then(elastic.saveTweet)
-    .then(poster.send)
-    .then(filter)
-    .then(elastic.saveFace)
-    .then(io.emit)
-    .catch(function (error) {
-      console.error('something borked!', error);
-    })
-    .done();
+  var parsedTweet = parser.parseTweet(tweet);
+
+  if (parsedTweet) {
+    elastic.saveTweet(parsedTweet)
+      .then(poster.send)
+      .then(filter)
+      .then(function (faces) {
+        return elastic.saveFaces({
+          faces: faces,
+          tweet: parsedTweet
+        }, emit);
+      })
+      .catch(function (error) {
+        console.error('something borked!', error);
+      })
+      .done();
+    } else {
+      console.log('No images here', tweet);
+    }
 }
 
 streamer
-.listen(onTweet)
-.then(function () {
-  console.log('started listening to tweets');
-});
+  .listen(onTweet)
+  .then(function (tag) {
+    console.log('started listening to %s tweets', tag);
+  });
