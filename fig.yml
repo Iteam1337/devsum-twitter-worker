@@ -6,5 +6,7 @@ web:
   build: .
   links:
     - elasticsearch:elasticsearch
+  volumes:
+    - ./config.json:/app/config.json
   ports:
     - "3000:3000"
