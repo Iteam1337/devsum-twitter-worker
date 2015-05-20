@@ -7,6 +7,8 @@ var parser = require('./lib/parser');
 var poster = require('./lib/poster');
 var elastic = require('./lib/elastic');
 var app = express();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
 
 function onTweet(tweet) {
   parser
@@ -16,6 +18,7 @@ function onTweet(tweet) {
     .then(function (result) {
       console.log('result', result);
     })
+    .then(io.emit)
     .catch(function (error) {
       console.log('something borked!', error);
     })
