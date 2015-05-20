@@ -2,3 +2,9 @@ elasticsearch:
   image: elasticsearch
   ports:
     - "9200:9200"
+web:
+  build: .
+  links:
+    - elasticsearch:elasticsearch
+  ports:
+    - "3000:3000"
