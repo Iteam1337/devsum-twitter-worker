@@ -18,8 +18,9 @@ function onTweet(tweet) {
     .then(poster.send)
     .then(filter)
     .then(elastic.saveFace)
+    .then(io.emit)
     .catch(function (error) {
-      console.log('something borked!', error);
+      console.error('something borked!', error);
     })
     .done();
 }

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Latest face</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+    io.on('connection', function(socket){
+      socket.on('face', function(face){
+        console.log('face', face);
+      });
+    });
+  </script>
+</head>
+<body>
+
+</body>
+</html>
