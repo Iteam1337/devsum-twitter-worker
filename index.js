@@ -6,22 +6,20 @@ var parser = require('./lib/parser');
 var poster = require('./lib/poster');
 var elastic = require('./lib/elastic');
 var filter = require('./lib/filter');
+var lastFace;
 
 var io = require('socket.io').listen(process.env.PORT ||  3000);
 
 io.on('connection', function (socket) {
-  socket.emit('news', {
-    hello: 'world'
-  });
+  if (lastFace) {
+    socket.emit('face', lastFace);
+  }
 });
 
-io.on('error', function () {
-  console.log('io error', arguments);
-});
-
-function emit(object) {
-  console.log('\n Emit a face event', JSON.stringify(object));
-  io.emit('face', object);
+function emit(face) {
+  console.log('\n Emit a face event', JSON.stringify(face));
+  io.emit('face', face);
+  lastFace = face;
 }
 
 function onTweet(tweet) {
