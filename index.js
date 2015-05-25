@@ -46,17 +46,20 @@ function onTweet(tweet) {
       .then(emitFaces.bind(parsedTweet))
       .then(elastic.saveFace)
       .then(elastic.saveTweet.bind(null, parsedTweet))
-      .catch(console.log)
+      .catch(function () {
+        console.error('something borked!', arguments);
+      })
       .done();
   } else {
     console.log('No images here', tweet);
   }
 }
 
-streamer.search(onTweet);
 
 streamer
   .listen(onTweet)
   .then(function (tag) {
     console.log('started listening to %s tweets', tag);
   });
+
+streamer.search(onTweet);
