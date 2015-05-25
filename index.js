@@ -44,7 +44,7 @@ function onTweet(tweet) {
       .send(parsedTweet)
       .then(filter)
       .then(emitFaces.bind(parsedTweet))
-      .then(elastic.saveFace)
+      .then(elastic.saveFaces)
       .then(elastic.saveTweet.bind(null, parsedTweet))
       .catch(function () {
         console.error('something borked!', arguments);
