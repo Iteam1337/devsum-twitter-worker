@@ -35,8 +35,8 @@ function onTweet(tweet) {
           tweet: parsedTweet
         }, emit);
       })
-      .catch(function (error) {
-        console.error('something borked!', error);
+      .catch(function () {
+        console.error('something borked!', arguments);
       })
       .done();
     } else {
@@ -44,10 +44,11 @@ function onTweet(tweet) {
     }
 }
 
-streamer.search(onTweet);
 
 streamer
   .listen(onTweet)
   .then(function (tag) {
     console.log('started listening to %s tweets', tag);
   });
+
+streamer.search(onTweet);
