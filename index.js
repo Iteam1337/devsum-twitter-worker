@@ -44,6 +44,8 @@ function onTweet(tweet) {
     }
 }
 
+streamer.search(onTweet);
+
 streamer
   .listen(onTweet)
   .then(function (tag) {
