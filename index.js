@@ -23,11 +23,12 @@ function emit(face) {
   lastFace = face;
 }
 
-function emitFaces(payload) {
-  return Q.all(payload.faces.map(function (face) {
+function emitFaces(faces) {
+  var tweet = this;
+  return Q.all(faces.map(function (face) {
     var faceObject = {
       face: face,
-      tweet: payload.tweet,
+      tweet: tweet,
       timestamp: Date.now()
     };
     emit(faceObject);
@@ -42,26 +43,11 @@ function onTweet(tweet) {
     poster
       .send(parsedTweet)
       .then(filter)
-      .then(emitFaces)
-      .then(elastic.saveFaces)
+      .then(emitFaces.bind(parsedTweet))
+      .then(elastic.saveFace)
       .then(elastic.saveTweet.bind(null, parsedTweet))
       .catch(console.log)
       .done();
-
-
-    // elastic.saveTweet(parsedTweet)
-    //   .then(poster.send)
-    //   .then(filter)
-    //   .then(function (faces) {
-    //     return elastic.saveFaces({
-    //       faces: faces,
-    //       tweet: parsedTweet
-    //     }, emit);
-    //   })
-    //   .catch(function (error) {
-    //     console.error('something borked!', error);
-    //   })
-    //   .done();
   } else {
     console.log('No images here', tweet);
   }
