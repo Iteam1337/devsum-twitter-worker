@@ -6,6 +6,7 @@ var parser = require('./lib/parser');
 var poster = require('./lib/poster');
 var elastic = require('./lib/elastic');
 var filter = require('./lib/filter');
+var Q = require('q');
 var lastFace;
 
 var io = require('socket.io').listen(process.env.PORT ||  3000);
@@ -22,26 +23,48 @@ function emit(face) {
   lastFace = face;
 }
 
+function emitFaces(payload) {
+  return Q.all(payload.faces.map(function (face) {
+    var faceObject = {
+      face: face,
+      tweet: payload.tweet,
+      timestamp: Date.now()
+    };
+    emit(faceObject);
+    return faceObject;
+  }));
+}
+
 function onTweet(tweet) {
   var parsedTweet = parser.parseTweet(tweet);
 
   if (parsedTweet) {
-    elastic.saveTweet(parsedTweet)
-      .then(poster.send)
+    poster
+      .send(parsedTweet)
       .then(filter)
-      .then(function (faces) {
-        return elastic.saveFaces({
-          faces: faces,
-          tweet: parsedTweet
-        }, emit);
-      })
-      .catch(function (error) {
-        console.error('something borked!', error);
-      })
+      .then(emitFaces)
+      .then(elastic.saveFaces)
+      .then(elastic.saveTweet.bind(null, parsedTweet))
+      .catch(console.log)
       .done();
-    } else {
-      console.log('No images here', tweet);
-    }
+
+
+    // elastic.saveTweet(parsedTweet)
+    //   .then(poster.send)
+    //   .then(filter)
+    //   .then(function (faces) {
+    //     return elastic.saveFaces({
+    //       faces: faces,
+    //       tweet: parsedTweet
+    //     }, emit);
+    //   })
+    //   .catch(function (error) {
+    //     console.error('something borked!', error);
+    //   })
+    //   .done();
+  } else {
+    console.log('No images here', tweet);
+  }
 }
 
 streamer
